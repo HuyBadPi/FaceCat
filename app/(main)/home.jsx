@@ -11,7 +11,8 @@ import Avatar from '../../components/Avatar'
 import { user } from '../../services/userService'
 
 const Home = () => {
-    const {setAuth} = useAuth();
+    const {user, setAuth} = useAuth();
+    // console.log('user:', user);
     const router = useRouter();
 
     // const onLogout = async () => {
@@ -21,6 +22,7 @@ const Home = () => {
     //         Alert.alert("Logout", error.message);
     //     }
     // }
+
   return (
     <ScreenWrapper bg="white">
         <View style={styles.container}>

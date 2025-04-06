@@ -87,7 +87,7 @@ const UserHeader = ({user, router, handleLogout}) => {
             {
               user && user.bio && (
                 <View style={styles.info} >
-                  <Icon name="info" size={20} color={theme.colors.textLight} />
+                  {/* <Icon name="info" size={20} color={theme.colors.textLight} /> */}
                   <Text style={styles.inforText}>{user && user.bio}</Text>
                 </View>
               )

@@ -34,6 +34,7 @@ const MainLayout = () => {
 
   const updateUserData = async (user, email) => {
     let res = await getUserData(user?.id);
+    // console.log('got user data:', res);
     if(res.success) setUserData({...res.data, email});
   }
 
