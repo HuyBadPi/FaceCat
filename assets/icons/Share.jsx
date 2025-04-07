@@ -1,8 +1,8 @@
-import AntDesign from '@expo/vector-icons/AntDesign';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as React from 'react';
 
 const Share = (props) => (
-    <AntDesign name="sharealt" size={24} color="#000000" fill="none" {...props} />
+    <Ionicons name="share-outline" size={24} color="#000000" fill="none" {...props} />
 );
 
 export default Share;

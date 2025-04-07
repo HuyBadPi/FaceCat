@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, View, Button, Pressable } from 'react-native'
+import { Alert, StyleSheet, Text, View, Button, Pressable, FlatList } from 'react-native'
 import React from 'react'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import { useAuth } from '../../contexts/AuthContext'
@@ -8,12 +8,51 @@ import { theme } from '../../constants/theme'
 import Icon from '../../assets/icons'
 import { useRouter } from 'expo-router'
 import Avatar from '../../components/Avatar'
-import { user } from '../../services/userService'
+import { getUserData, user } from '../../services/userService'
+import { fetchPosts } from '../../services/postService'
+import { useEffect, useState } from 'react'
+import PostCard from '../../components/PostCard'
+import Loading from '../../components/Loading'
 
+var limit = 0;
 const Home = () => {
     const {user, setAuth} = useAuth();
-    // console.log('user:', user);
     const router = useRouter();
+    const [posts, setPosts] = useState([]);
+
+    const handlePostEvent = async (payload) => {
+        if(payload.eventType == 'INSERT') {
+            let newPost = {...payload.new};
+            let res = await getUserData(newPost.userID);
+            newPost.user = res.success ? res.data : {};
+            setPosts(prevPosts=> [newPost, ...prevPosts]);
+        }
+    }
+
+    useEffect(() => {
+        let postChannel = supabase
+            .channel('posts')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, handlePostEvent)
+            .subscribe()
+
+        getPosts();
+
+        return () => {
+            supabase.removeChannel(postChannel);
+        }
+    }, []);
+
+    const getPosts = async () => {
+        // //call API here
+        limit = limit + 10;
+        console.log('limit', limit);
+        let res = await fetchPosts();
+        if(res.success) {
+            setPosts(res.data); }
+        // } else {
+        //     Alert.alert("Error", res.msg);
+        // }
+    }
 
     // const onLogout = async () => {
     //     // setAuth(null);
@@ -46,6 +85,27 @@ const Home = () => {
                     </Pressable>
                 </View>
             </View>
+
+            {/*posts*/}
+            <FlatList
+                data = {posts}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.listStyle}
+                keyExtractor={item => item.id.toString()}
+                renderItem={({item}) => <PostCard
+                    item={item}
+                    currentUser={user}
+                    router={router}
+                />}
+                ListFooterComponent={(
+                    <View style={{marginVertical: 30}} >
+                        <Loading/>
+                    </View>
+                )}
+            /> 
+                
+
+
         </View>
         {/* <Button title="Logout" onPress={onLogout} /> */}
     </ScreenWrapper>
