@@ -63,6 +63,24 @@ export const uploadFile = async (folderName, fileUri, isImage = true) => {
     }
 };
 
+
+export const downloadFile = async (url) => {
+    try {
+        const { uri } = await FileSystem.downloadAsync(
+            url,
+            getLocalFilePath(url)
+        );
+        return uri;
+    } catch (error) {
+        return null;
+    }
+}
+
+export const getLocalFilePath = filePath => {
+    let fileName = filePath.split('/').pop();
+    return `${FileSystem.documentDirectory}${fileName}`;
+}
+
 export const getFilePath = (folderName, fileUri) => {
     const extension = fileUri.split('.').pop().toLowerCase(); // Lấy phần mở rộng từ fileUri
     return `/${folderName}/${(new Date()).getTime()}.${extension}`;
