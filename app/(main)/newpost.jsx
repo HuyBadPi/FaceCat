@@ -81,7 +81,7 @@ const NewPost = () => {
       body: bodyRef.current,
       userID: user?.id
     }
-    console.log('data:', data);
+    // console.log('data:', data);
     setLoading(true);
     let res = await createOrUpdatePost(data);
     setLoading(false);
