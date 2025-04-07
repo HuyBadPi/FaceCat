@@ -33,7 +33,7 @@ const Home = () => {
                     <Pressable onPress={()=>router.push('notifications')}>
                         <Icon name="heart" size={hp(3.2)} color={theme.colors.text} />
                     </Pressable>
-                    <Pressable onPress={()=>router.push('newpost')}>
+                    <Pressable onPress={()=>router.push('newPost')}>
                         <Icon name="plus" size={hp(3.2)} color={theme.colors.text} />
                     </Pressable>
                     <Pressable onPress={()=>router.push('profile')}>
