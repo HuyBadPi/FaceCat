@@ -30,9 +30,28 @@ export const createOrUpdatePost = async (post) => {
 }
 
 
-export const fetchPosts = async (limit=10) => {
+export const fetchPosts = async (limit=10, userID) => {
     try {
-        const { data, error } = await supabase
+        if(userID){
+            const { data, error } = await supabase
+            .from('posts')
+            .select(`
+                *, 
+                user: users(id, name, image),
+                postLikes (*),
+                comments (count)
+            `)
+            .order('created_at', { ascending: false })
+            .eq('userID', userID)
+            .limit(limit);
+            if (error) {
+                console.log('fetchPosts error', error);
+                return { success: false, msg: "could not fetch post" };
+            }
+            return { success: true, data: data };
+
+        } else {
+            const { data, error } = await supabase
             .from('posts')
             .select(`
                 *, 
@@ -42,11 +61,13 @@ export const fetchPosts = async (limit=10) => {
             `)
             .order('created_at', { ascending: false })
             .limit(limit);
-        if (error) {
-            console.log('fetchPosts error', error);
-            return { success: false, msg: "could not fetch post" };
+
+            if (error) {
+                console.log('fetchPosts error', error);
+                return { success: false, msg: "could not fetch post" };
+            }
+            return { success: true, data: data };
         }
-        return { success: true, data: data };
     } catch (error) {
         console.log('fetchPosts error', error);
         return { success: false, msg: "Could not fetch posts" };
@@ -146,5 +167,22 @@ export const removeComment = async (commentID) => {
     } catch (error) {
         console.log('removeComment error', error);
         return { success: false, msg: "Could not remove the comment" };
+    }
+}
+
+export const removePost = async (postID) => {
+    try{
+        const { error } = await supabase
+            .from('posts')
+            .delete()
+            .eq('id', postID)
+        if (error) {
+            console.log('removePost error', error);
+            return { success: false, msg: "could not remove the post" };
+        }
+        return { success: true, data: {postID} };
+    } catch (error) {
+        console.log('removePost error', error);
+        return { success: false, msg: "Could not remove the post" };
     }
 }

@@ -25,8 +25,28 @@ const Home = () => {
         if(payload.eventType == 'INSERT') {
             let newPost = {...payload.new};
             let res = await getUserData(newPost.userID);
+            newPost.postLikes = [];
+            newPost.comments = [{count: 0}];
             newPost.user = res.success ? res.data : {};
             setPosts(prevPosts=> [newPost, ...prevPosts]);
+        }
+        if(payload.eventType == 'DELETE' && payload.old.id) {
+            setPosts(prevPosts=> {
+                let updatedPosts = prevPosts.filter(post => post.id != payload.old.id);
+                return updatedPosts;
+            })
+        }
+        if(payload.eventType == 'UPDATE' && payload?.new?.id) {
+            setPosts(prevPosts=> {
+                let updatedPosts = prevPosts.map(post => {
+                    if(post.id == payload.new.id) {
+                        post.body = payload.new.body;
+                        post.file = payload.new.file;
+                    }
+                    return post;
+                });
+                return updatedPosts;
+            })
         }
     }
 
@@ -48,13 +68,11 @@ const Home = () => {
         if(!hasMore) return null;
         limit = limit + 10;
         console.log('fetch', limit);
-        let res = await fetchPosts();
+        let res = await fetchPosts(limit);
         if(res.success) {
             if(posts.length == res.data.length) setHasMore(false);
-            setPosts(res.data); }
-        // } else {
-        //     Alert.alert("Error", res.msg);
-        // }
+            setPosts(res.data); 
+        }
     }
 
     // const onLogout = async () => {
@@ -111,7 +129,7 @@ const Home = () => {
                         <Loading/>
                     </View>
                 ):(
-                    <View style={{marginVertical: posts.length==0? 200: 30}} >
+                    <View style={{marginVertical: 30}} >
                         <Text style={styles.noPosts}>No more posts</Text>
                     </View>
                 )}

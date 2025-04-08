@@ -38,6 +38,9 @@ const PostCard = ({
     router,
     hasShadow = true,
     showMoreIcon = true,
+    showDelete = false,
+    onDelete = () => {},
+    onEdit = () => {},
 }) => {
     const shadowStyles = {
         shadowOffset: {
@@ -101,6 +104,21 @@ const PostCard = ({
         Share.share(content);
     }
 
+    const handlePostDelete = () => {
+        Alert.alert('Confirm', 'Are you sure you want to delete this post?', [
+            {
+                text: 'Cancel',
+                onPress:() => console.log('Modal canncelled'),
+                style: 'cancel',
+            },
+            {
+                text: 'Delete',
+                onPress: () => {onDelete(item)},
+                style: 'destructive',
+            }
+        ])
+    }
+
 
     const createAt = moment(item?.created_at).format('MMM DD')
     const liked = likes.filter(like => like.userID == currentUser?.id)[0]? true : false;
@@ -122,6 +140,19 @@ const PostCard = ({
                 <TouchableOpacity onPress={openPostDetails}>
                     <Icon name='threeDotsHorizontal' size={hp(2.3)} color={theme.colors.text} />
                 </TouchableOpacity>
+            )
+        }
+
+        {
+            showDelete && currentUser.id == item?.userID && (
+                <View style={styles.actions}>
+                    <TouchableOpacity onPress={()=> onEdit(item)}>
+                        <Icon name='edit' size={hp(2.5)} color={theme.colors.text} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handlePostDelete}>
+                        <Icon name='delete' size={hp(2.5)} color={theme.colors.text} />
+                    </TouchableOpacity>
+                </View>
             )
         }
         
