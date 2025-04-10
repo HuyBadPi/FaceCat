@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useState, useRef } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { fetchPostDetails, removeComment, removePost } from '../../services/postService';
+import { fetchPostDetails, removeComment, removePost, createComment } from '../../services/postService';
 import { theme } from '../../constants/theme';
 import { hp, wp } from '../../helpers/common';
 import PostCard from '../../components/PostCard';
@@ -9,14 +9,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import Loading from '../../components/Loading';
 import Input from '../../components/Input';
 import Icon from '../../assets/icons';
-import { createComment } from '../../services/postService';
 import CommentItem from '../../components/CommentItem';
 import { supabase } from '../../lib/supabase';
 import { getUserData } from '../../services/userService';
+import { createNotification } from '../../services/notificationService';
 
 
 const PostDetails = () => {
-    const { postID } = useLocalSearchParams();
+    const { postID, commentID } = useLocalSearchParams();
     const { user } = useAuth();
     const router = useRouter();
     const [startLoading, setStartLoading] = useState(true);
@@ -74,6 +74,18 @@ const PostDetails = () => {
         setLoading(false);
         if(res.success){
             // send notification later
+            if(user.id != post.userID) {
+                let notify = {
+                    senderID: user.id,
+                    receiverID: post.userID,
+                    title: 'commented on your post',
+                    data: JSON.stringify({
+                        postID: post.id,
+                        commentID: res?.data?.id,
+                    }),
+                }
+                createNotification(notify);
+            }
             inputRef?.current?.clear();
             commentRef.current = '';
         } else {
@@ -174,6 +186,7 @@ const PostDetails = () => {
                             key={comment?.id?.toString()}
                             item={comment}
                             onDelete={onDeleteComment}
+                            highlight = {comment.id == commentID}
                             canDelete={user.id == comment.userID || user.id == post.userID}
                         />
                      )

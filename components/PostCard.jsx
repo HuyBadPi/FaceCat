@@ -73,7 +73,6 @@ const PostCard = ({
             let updateLikes = likes.filter(like => like.userID != currentUser?.id);
             setLikes([...updateLikes]);
             let res = await removePostLike(item?.id, currentUser?.id);
-            console.log('removed like', res);
             if(!res.success) {
                 Alert.alert("Post", "Something went wrong");
             }
@@ -85,7 +84,6 @@ const PostCard = ({
             }
             setLikes([...likes, data]);
             let res = await createPostLike(data);
-            console.log('added like', res);
             if(!res.success) {
                 Alert.alert("Post", "Something went wrong");
             }

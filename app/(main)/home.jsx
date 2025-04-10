@@ -8,18 +8,20 @@ import { theme } from '../../constants/theme'
 import Icon from '../../assets/icons'
 import { useRouter } from 'expo-router'
 import Avatar from '../../components/Avatar'
-import { getUserData, user } from '../../services/userService'
+import { getUserData } from '../../services/userService'
 import { fetchPosts } from '../../services/postService'
 import { useEffect, useState } from 'react'
 import PostCard from '../../components/PostCard'
 import Loading from '../../components/Loading'
 
+
 var limit = 0;
 const Home = () => {
-    const {user, setAuth} = useAuth();
+    const {user} = useAuth();
     const router = useRouter();
     const [posts, setPosts] = useState([]);
     const [hasMore, setHasMore] = useState(true);
+    const [notificationCount, setNotificationCount] = useState(0);
 
     const handlePostEvent = async (payload) => {
         if(payload.eventType == 'INSERT') {
@@ -50,16 +52,30 @@ const Home = () => {
         }
     }
 
+    const handleNewNotifications = async (payload) => {
+        console.log('new notification:', payload);
+        if(payload.eventType == 'INSERT' && payload.new.id) {
+            setNotificationCount(prevCount => prevCount + 1);
+        }
+    }
+
     useEffect(() => {
         let postChannel = supabase
             .channel('posts')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, handlePostEvent)
-            .subscribe()
+            .subscribe();
 
         // getPosts();
 
+        let notificationChannel = supabase
+            .channel('notifications')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `receiverID=eq.${user.id}`}, handleNewNotifications)
+            .subscribe();
+                
+
         return () => {
             supabase.removeChannel(postChannel);
+            supabase.removeChannel(notificationChannel);
         }
     }, []);
 
@@ -67,7 +83,6 @@ const Home = () => {
         // //call API here
         if(!hasMore) return null;
         limit = limit + 10;
-        console.log('fetch', limit);
         let res = await fetchPosts(limit);
         if(res.success) {
             if(posts.length == res.data.length) setHasMore(false);
@@ -90,8 +105,18 @@ const Home = () => {
             <View style={styles.header}>
                 <Text style={styles.title}>FaceCat</Text>
                 <View style={styles.icons}>
-                    <Pressable onPress={()=>router.push('notifications')}>
+                    <Pressable onPress={()=> {
+                        setNotificationCount(0)
+                        router.push('notifications')
+                    }}>
                         <Icon name="heart" size={hp(3.2)} color={theme.colors.text} />
+                        {
+                            notificationCount > 0 && (
+                                <View style={styles.pill}>
+                                    <Text style={styles.pillText}>{notificationCount}</Text>
+                                </View>
+                            )
+                        }
                     </Pressable>
                     <Pressable onPress={()=>router.push('newpost')}>
                         <Icon name="plus" size={hp(3.2)} color={theme.colors.text} />
